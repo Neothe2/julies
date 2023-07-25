@@ -1,78 +1,82 @@
-import { Injectable, OnDestroy } from '@angular/core';
-import { DbService } from '../db/db.service';
+import { Injectable } from '@angular/core';
 import {
   BehaviorSubject,
-  Subscription,
-  Observable,
+  catchError,
   from,
   map,
-  take,
-  catchError,
+  Observable,
   of,
+  Subscription,
+  take,
 } from 'rxjs';
-import { TableDoc } from 'src/app/model/table';
 import { ProductsConsumedDoc } from 'src/app/model/productsConsumed';
+import { DbService } from '../db/db.service';
 
 @Injectable({
   providedIn: 'root',
 })
-export class ProductsConsumedService implements OnDestroy {
-  private prodConsumedSubject: BehaviorSubject<Array<ProductsConsumedDoc>> =
-    new BehaviorSubject<Array<ProductsConsumedDoc>>(
-      new Array<ProductsConsumedDoc>()
-    );
-  subscriptions: Subscription[] = [];
+export class ProductsConsumedService {
+  prodConsumedSubject: BehaviorSubject<Array<ProductsConsumedDoc>> =
+    new BehaviorSubject(new Array<ProductsConsumedDoc>());
+  subscriptions: Array<Subscription> = [];
+  tableIdSubject: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
-  constructor(private db: DbService) {
-    this.initChangeHandler();
+  constructor(private dbService: DbService) {
+    let s = this.tableIdSubject.subscribe((tableId) => {
+      this.fetchProductsConsumed(tableId);
+      this.initChangeHandler(tableId);
+    });
   }
 
-  initChangeHandler() {
-    let sub = this.db
+  initChangeHandler(tableId: string) {
+    let sub: Subscription = this.dbService
       .getCurrentConsumedProductChanges()
       .subscribe((changeDoc: ProductsConsumedDoc) => {
         if (changeDoc) {
-          console.log('handlechange called');
-          this.db.handleChange(this.prodConsumedSubject, changeDoc, () => {
-            this.fetchProductsConsumed();
-          });
+          console.warn('handleChange called');
+          this.dbService.handleChange(
+            this.prodConsumedSubject,
+            changeDoc,
+            () => {
+              this.fetchProductsConsumed(tableId);
+            }
+          );
         }
       });
     this.subscriptions.push(sub);
   }
 
-  handleChange() {
-    this.fetchProductsConsumed();
+  ngOnDestroy() {
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
-  ngOnDestroy(): void {
-    for (let sub of this.subscriptions) {
-      sub.unsubscribe();
-    }
+  setTableId(tableId: string) {
+    if (tableId === undefined || tableId === null || tableId == '') return;
+    this.tableIdSubject.next(tableId);
   }
 
-  fetchProductsConsumed() {
+  fetchProductsConsumed(tableId: string) {
     let query = {
       selector: {
         type: 'products-consumed',
+        table: `${tableId}`,
       },
       fields: ['_id', '_rev', 'table', 'type', 'products'],
-      execution_status: true,
+      execution_stats: true,
       limit: 1,
     };
-    let q: Observable<any> = from(this.db.db.find(query)).pipe(
+    let q: Observable<any> = from(this.dbService.db.find(query)).pipe(
       map((obj: any) => obj['docs'])
     );
-
     q.pipe(
       take(1),
       catchError((_) => of([]))
-    ).subscribe((ProductsConsumed: any) => {
-      this.prodConsumedSubject.next(ProductsConsumed);
+    ).subscribe((tableDocs) => {
+      this.prodConsumedSubject.next(tableDocs);
     });
   }
 
-  getCurrentProducts() {
+  getProductsConsumed() {
     return this.prodConsumedSubject.asObservable();
   }
 }

@@ -9,7 +9,7 @@
 
 <ion-content [fullscreen]="true">
   <ion-list>
-    <ion-item *ngFor="let prod of productsConsumed[0]?.products">
+    <ion-item *ngFor="let prod of prodConsumed?.products">
       <ion-grid>
         <ion-row>
           <ion-col size="2">
@@ -26,19 +26,17 @@
         </ion-row>
       </ion-grid>
     </ion-item>
-    <ion-item>
-      <ion-label><strong>Total</strong></ion-label>
-      <ion-text>{{total | currency}}</ion-text>
-    </ion-item>
   </ion-list>
   <ion-grid>
     <ion-row>
       <ion-col size="9">
         <ion-row>
           <ion-col *ngFor="let p of visibleProducts[0]?.products">
-            <ion-label>
-              <h4>{{p?.product}}</h4>
-            </ion-label>
+            <ion-card (click)="addProductToConsumed(p)">
+              <ion-header>
+                <ion-title><h4>{{p?.product}}</h4></ion-title>
+              </ion-header>
+            </ion-card>
           </ion-col>
         </ion-row>
       </ion-col>

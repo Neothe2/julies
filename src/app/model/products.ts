@@ -6,7 +6,7 @@ export class ProductsDoc {
   products: Array<Product> = [];
 }
 
-class Product {
+export class Product {
   product: string = '';
   category: string = '';
   amount: number = 0;

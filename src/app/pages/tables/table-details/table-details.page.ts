@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { ProductsDoc } from 'src/app/model/products';
+import { Subscription } from 'rxjs';
+import { Product, ProductsDoc } from 'src/app/model/products';
 import { ProductsConsumedDoc } from 'src/app/model/productsConsumed';
 import { ProductsConsumedService } from 'src/app/services/products-consumed/products-consumed.service';
 import { ProductsService } from 'src/app/services/products/products.service';
@@ -11,37 +12,49 @@ import { ProductsService } from 'src/app/services/products/products.service';
   styleUrls: ['./table-details.page.scss'],
 })
 export class TableDetailsPage implements OnInit {
-  productsConsumed!: Array<ProductsConsumedDoc>;
-  total: number = 0;
   tableId: string = '';
-  visibleProducts!: ProductsDoc[];
+  prodConsumed: ProductsConsumedDoc = new ProductsConsumedDoc();
+  visibleProducts: Array<ProductsDoc> = [];
+
+  subscriptions: Array<Subscription> = [];
 
   constructor(
     private prodConsumedService: ProductsConsumedService,
-    private activatedRoute: ActivatedRoute,
-    private productService: ProductsService
-  ) {
+    private productService: ProductsService,
+    private activatedRoute: ActivatedRoute
+  ) {}
+
+  ngOnInit() {}
+
+  ngAfterViewInit() {}
+
+  ionViewWillEnter() {
+    this.tableId = this.activatedRoute.snapshot.paramMap.get('id') as string;
+    this.prodConsumedService.setTableId(this.tableId);
+
     this.productService.fetchProducts();
+    this.prodConsumedService.fetchProductsConsumed(this.tableId);
+
+    this.initSubscriptions();
   }
 
-  ngOnInit() {
-    this.prodConsumedService
-      .getCurrentProducts()
-      .subscribe((productDocs: Array<ProductsConsumedDoc>) => {
-        this.productsConsumed = productDocs;
-        console.log(this.productsConsumed);
-        this.productsConsumed[0]?.products.forEach((p) => {
-          this.total += p.ppp * p.amount;
-        });
+  initSubscriptions() {
+    let p = this.prodConsumedService
+      .getProductsConsumed()
+      .subscribe((prodConsumed: Array<ProductsConsumedDoc>) => {
+        this.prodConsumed = prodConsumed[0];
       });
-    this.prodConsumedService.fetchProductsConsumed();
+    this.subscriptions.push(p);
 
-    this.activatedRoute.params.subscribe((params) => {
-      this.tableId = params['id'] as string;
-    });
+    let p2 = this.productService
+      .getCurrentProducts()
+      .subscribe((productsDoc: Array<ProductsDoc>) => {
+        let products = productsDoc[0];
+        this.visibleProducts = productsDoc;
+      });
+  }
 
-    this.productService.getCurrentProducts().subscribe((products) => {
-      this.visibleProducts = products;
-    });
+  addProductToConsumed(p: Product) {
+    //TODO: check stock > 0 ? change the quantity of that product in that list : add a new product to that list
   }
 }
