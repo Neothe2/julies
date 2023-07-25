@@ -6,12 +6,15 @@ import { TablesPage } from './tables.page';
 const routes: Routes = [
   {
     path: '',
-    component: TablesPage
+    component: TablesPage,
   },
   {
-    path: 'table-details',
-    loadChildren: () => import('./table-details/table-details.module').then( m => m.TableDetailsPageModule)
-  }
+    path: 'table-details/:id',
+    loadChildren: () =>
+      import('./table-details/table-details.module').then(
+        (m) => m.TableDetailsPageModule
+      ),
+  },
 ];
 
 @NgModule({

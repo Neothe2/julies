@@ -1,13 +1,47 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>table-details</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/tables"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{tableId}}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">table-details</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <ion-list>
+    <ion-item *ngFor="let prod of productsConsumed[0]?.products">
+      <ion-grid>
+        <ion-row>
+          <ion-col size="2">
+            <ion-label>
+              <h4>{{prod.amount}}x</h4>
+            </ion-label>
+          </ion-col>
+          <ion-col size="2">
+            <ion-label>
+              <h4>{{prod.product}}</h4>
+              <p>{{prod.ppp | currency}}</p>
+            </ion-label>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-item>
+    <ion-item>
+      <ion-label><strong>Total</strong></ion-label>
+      <ion-text>{{total | currency}}</ion-text>
+    </ion-item>
+  </ion-list>
+  <ion-grid>
+    <ion-row>
+      <ion-col size="9">
+        <ion-row>
+          <ion-col *ngFor="let p of visibleProducts[0]?.products">
+            <ion-label>
+              <h4>{{p?.product}}</h4>
+            </ion-label>
+          </ion-col>
+        </ion-row>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>
