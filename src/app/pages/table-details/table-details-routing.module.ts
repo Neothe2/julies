@@ -7,6 +7,10 @@ const routes: Routes = [
   {
     path: '',
     component: TableDetailsPage
+  },
+  {
+    path: 'pay',
+    loadChildren: () => import('./pay/pay.module').then( m => m.PayPageModule)
   }
 ];
 
