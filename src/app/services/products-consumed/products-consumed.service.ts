@@ -12,6 +12,7 @@ import {
 import { ProductsConsumedDoc } from 'src/app/model/productsConsumed';
 import { v4 as uuidv4 } from 'uuid';
 import { DbService } from '../db/db.service';
+import { DBRepository } from 'src/app/db/DB.repository';
 
 @Injectable({
   providedIn: 'root',
@@ -22,7 +23,7 @@ export class ProductsConsumedService {
   subscriptions: Array<Subscription> = [];
   tableIdSubject: BehaviorSubject<string> = new BehaviorSubject<string>('');
 
-  constructor(private dbService: DbService) {
+  constructor(private dbService: DBRepository<any>) {
     let s = this.tableIdSubject.subscribe((tableId) => {
       this.fetchProductsConsumed(tableId);
       this.initChangeHandler(tableId);
@@ -31,11 +32,11 @@ export class ProductsConsumedService {
 
   initChangeHandler(tableId: string) {
     let sub: Subscription = this.dbService
-      .getCurrentConsumedProductChanges()
+      .getDocumentChanges$()
       .subscribe((changeDoc: ProductsConsumedDoc) => {
         if (changeDoc) {
           console.warn('handleChange called');
-          this.dbService.handleChange(
+          this.dbService.handleDocumentChange(
             this.prodConsumedSubject,
             changeDoc,
             () => {
@@ -69,8 +70,14 @@ export class ProductsConsumedService {
       execution_stats: true,
       limit: 1,
     };
-    let q: Observable<any> = from(this.dbService.db.find(query)).pipe(
-      map((obj: any) => obj['docs'])
+    // let q: Observable<any> = from(this.dbService.db.find(query)).pipe(
+    //   map((obj: any) => obj['docs'])
+    // );
+
+    let q = this.dbService.fetchByTypeAndTableID(
+      'products-consumed',
+      tableId.toString(),
+      ['_id', '_rev', 'table', 'type', 'products']
     );
     q.pipe(
       take(1),
@@ -98,8 +105,9 @@ export class ProductsConsumedService {
   }
 
   updateProductsConsumed(doc: ProductsConsumedDoc) {
-    this.dbService.db.put(doc).catch((err: any) => {
-      console.error(err);
-    });
+    this.dbService.createOrUpdate(doc);
+    // this.dbService.db.put(doc).catch((err: any) => {
+    //   console.error(err);
+    // });
   }
 }

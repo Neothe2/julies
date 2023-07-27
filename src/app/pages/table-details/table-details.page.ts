@@ -122,4 +122,54 @@ export class TableDetailsPage implements OnInit {
     this.prodConsumedService.updateProductsConsumed(this.prodConsumed);
     this.editted = false;
   }
+
+  onDecreaseAmount(product: ConsumedProduct) {
+    this.prodConsumed = this.subtract(product, this.prodConsumed);
+  }
+
+  subtract(product: ConsumedProduct, consumedArray: ProductsConsumedDoc) {
+    let found = consumedArray.products.some(
+      (p) => p.product === product.product
+    );
+
+    if (found) {
+      consumedArray.products.forEach((p) => {
+        if (p.product === product.product) {
+          p.amount = Math.max(0, p.amount - 1);
+        }
+      });
+    } else {
+      console.log('Product not found in consumed array');
+    }
+
+    // remove product from list if amount is 0
+    consumedArray.products = consumedArray.products.filter((p) => p.amount > 0);
+
+    return consumedArray;
+  }
+
+  onIncreaseAmount(product: ConsumedProduct) {
+    console.log(product);
+    this.prodConsumed = this.add(product, this.prodConsumed);
+  }
+
+  add(product: any, consumedArray: any) {
+    let found = consumedArray.products.some(
+      (p: any) => p.product == product.product
+    );
+
+    if (found) {
+      consumedArray.products.forEach((p: any) => {
+        if (p.product == product.product) {
+          p.amount += 1;
+        }
+      });
+    } else {
+      product.amount = 1;
+      // let arr = consumedArray.products;
+      consumedArray.products.push(product);
+    }
+
+    return consumedArray;
+  }
 }

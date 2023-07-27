@@ -11,6 +11,7 @@ import {
 } from 'rxjs';
 import { ProductsDoc } from 'src/app/model/products';
 import { DbService } from '../db/db.service';
+import { DBRepository } from 'src/app/db/DB.repository';
 
 @Injectable({
   providedIn: 'root',
@@ -21,20 +22,24 @@ export class ProductsService {
   );
   subscriptions: Array<Subscription> = [];
 
-  constructor(private dbService: DbService) {
+  constructor(private dbService: DBRepository<any>) {
     this.fetchProducts();
     this.initChangeHandler();
   }
 
   initChangeHandler() {
     let sub: Subscription = this.dbService
-      .getAllProductChanges()
+      .getDocumentChanges$()
       .subscribe((changeDoc: ProductsDoc) => {
         if (changeDoc) {
-          console.warn('handleChange called');
-          this.dbService.handleChange(this.prodSubject, changeDoc, () => {
-            this.fetchProducts();
-          });
+          if (changeDoc.type != 'products') return;
+          this.dbService.handleDocumentChange(
+            this.prodSubject,
+            changeDoc,
+            () => {
+              this.fetchProducts();
+            }
+          );
         }
       });
     this.subscriptions.push(sub);
@@ -54,9 +59,15 @@ export class ProductsService {
       execution_stats: true,
       limit: 1,
     };
-    let q: Observable<any> = from(this.dbService.db.find(query)).pipe(
-      map((obj: any) => obj['docs'])
-    );
+    // let q: Observable<any> = from(this.dbService.db.find(query)).pipe(
+    //   map((obj: any) => obj['docs'])
+    // );
+    let q = this.dbService.fetchByType('products', [
+      '_id',
+      '_rev',
+      'type',
+      'products',
+    ]);
     q.pipe(
       take(1),
       catchError((_) => of([]))

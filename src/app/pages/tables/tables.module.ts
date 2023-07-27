@@ -8,6 +8,7 @@ import { TablesPageRoutingModule } from './tables-routing.module';
 
 import { TableDetailsPageModule } from '../table-details/table-details.module';
 import { TablesPage } from './tables.page';
+import { ApplicationPipesModule } from 'src/app/modules/application-pipes/application-pipes.module';
 
 @NgModule({
   imports: [
@@ -16,6 +17,7 @@ import { TablesPage } from './tables.page';
     IonicModule,
     TablesPageRoutingModule,
     TableDetailsPageModule,
+    ApplicationPipesModule,
   ],
   declarations: [TablesPage],
 })
