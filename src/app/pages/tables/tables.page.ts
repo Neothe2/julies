@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { TableDoc } from 'src/app/model/table';
 import { TableService } from 'src/app/services/table/table.service';
 
@@ -7,16 +7,14 @@ import { TableService } from 'src/app/services/table/table.service';
   templateUrl: './tables.page.html',
   styleUrls: ['./tables.page.scss'],
 })
-export class TablesPage implements OnInit, AfterViewInit {
-  tables: Array<TableDoc> = [];
-
+export class TablesPage implements OnInit {
+  tables: Array<TableDoc> = new Array<TableDoc>();
   constructor(private tableService: TableService) {}
 
   ngOnInit() {}
 
-  ngAfterViewInit(): void {
-    this.tableService.getCurrentTables().subscribe((tableDocs: any) => {
-      console.log(tableDocs);
+  ngAfterViewInit() {
+    this.tableService.getCurrentTables().subscribe((tableDocs) => {
       this.tables = tableDocs;
     });
     this.tableService.fetchTables();

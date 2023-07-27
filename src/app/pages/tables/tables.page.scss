@@ -4,10 +4,6 @@ ion-card {
   max-height: 100px;
   margin: 0 !important;
   padding: 0 !important;
-}
-ion-card-header {
-  height: 100% !important;
-}
-ion-card-subtitle {
-  text-transform: uppercase;
+  box-shadow: none !important;
+  border-style: solid;
 }

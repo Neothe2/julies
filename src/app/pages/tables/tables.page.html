@@ -1,21 +1,27 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>tables</ion-title>
+    <ion-title>Julies</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content>
   <ion-grid>
-    <ion-row>
-      <ion-col *ngFor="let table of tables" size="4" size-md="2 " size-lg="1">
+    <ion-row class="ion-no-padding">
+      <ion-col
+        *ngFor="let obj of tables"
+        class="ion-no-padding ion-no-margin ion-justify-content-center"
+        size="3"
+        size-md="2"
+        size-lg="1"
+      >
         <ion-card
-          class="ion-no-margin"
-          routerLink="/tabs/tables/table-details/{{table.table.id}}"
+          class="ion-no-padding"
+          routerLink="/tabs/tables/table-details/{{obj.table.id}}"
         >
-          <ion-card-header class="ion-text-center">
-            <ion-card-title> {{table.table.id}} </ion-card-title>
-            <ion-card-subtitle>{{table.table.state}}</ion-card-subtitle>
-          </ion-card-header>
+          <ion-card-title class="ion-text-center"
+            >{{ obj.table.id }}</ion-card-title
+          >
+          <ion-card-subtitle>{{ obj.table.state }}</ion-card-subtitle>
         </ion-card>
       </ion-col>
     </ion-row>

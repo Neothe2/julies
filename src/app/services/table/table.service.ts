@@ -1,38 +1,37 @@
-import { Injectable, OnDestroy } from '@angular/core';
-import { DbService } from '../db/db.service';
+import { Injectable } from '@angular/core';
 import {
   BehaviorSubject,
-  Observable,
-  Subject,
-  Subscription,
   catchError,
   from,
   map,
+  Observable,
   of,
+  Subscription,
   take,
 } from 'rxjs';
 import { TableDoc } from 'src/app/model/table';
+import { DbService } from '../db/db.service';
 
 @Injectable({
   providedIn: 'root',
 })
-export class TableService implements OnDestroy {
-  private tablesSubject: BehaviorSubject<Array<TableDoc>> = new BehaviorSubject<
-    Array<TableDoc>
-  >(new Array<TableDoc>());
-  subscriptions: Subscription[] = [];
+export class TableService {
+  tablesSubject: BehaviorSubject<Array<TableDoc>> = new BehaviorSubject(
+    new Array<TableDoc>()
+  );
+  subscriptions: Array<Subscription> = [];
 
-  constructor(private db: DbService) {
+  constructor(private dbService: DbService) {
     this.initChangeHandler();
   }
 
   initChangeHandler() {
-    let sub = this.db
+    let sub: Subscription = this.dbService
       .getCurrentTableChanges()
       .subscribe((changeDoc: TableDoc) => {
         if (changeDoc) {
-          console.log('handlechange called');
-          this.db.handleChange(this.tablesSubject, changeDoc, () => {
+          console.warn('handleChange called');
+          this.dbService.handleChange(this.tablesSubject, changeDoc, () => {
             this.fetchTables();
           });
         }
@@ -40,32 +39,26 @@ export class TableService implements OnDestroy {
     this.subscriptions.push(sub);
   }
 
-  handleChange() {
-    this.fetchTables();
-  }
-
-  ngOnDestroy(): void {
-    for (let sub of this.subscriptions) {
-      sub.unsubscribe();
-    }
+  ngOnDestroy() {
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
   fetchTables() {
+    console.error('fetchTables called');
     let query = {
       selector: {
         type: 'table',
       },
       fields: ['_id', '_rev', 'table', 'type'],
-      execution_status: true,
+      execution_stats: true,
     };
-    let q: Observable<any> = from(this.db.db.find(query)).pipe(
+    let q: Observable<any> = from(this.dbService.db.find(query)).pipe(
       map((obj: any) => obj['docs'])
     );
-
     q.pipe(
       take(1),
       catchError((_) => of([]))
-    ).subscribe((tableDocs: any) => {
+    ).subscribe((tableDocs) => {
       this.tablesSubject.next(tableDocs);
     });
   }

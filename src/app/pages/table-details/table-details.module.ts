@@ -1,5 +1,5 @@
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
@@ -13,8 +13,8 @@ import { TableDetailsPage } from './table-details.page';
     CommonModule,
     FormsModule,
     IonicModule,
-    TableDetailsPageRoutingModule
+    TableDetailsPageRoutingModule,
   ],
-  declarations: [TableDetailsPage]
+  declarations: [TableDetailsPage],
 })
 export class TableDetailsPageModule {}

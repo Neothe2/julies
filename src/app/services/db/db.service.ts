@@ -15,12 +15,12 @@ export class DbService {
 
   _tablesSubject = new Subject<TableDoc>();
   _prodConsumedSubject = new Subject<ProductsConsumedDoc>();
-  _prodSubject = new Subject<ProductsDoc>();
+  _productsSubject = new Subject<ProductsDoc>();
 
   constructor() {
     PouchDB.plugin(PouchDBFind);
     this.db = new PouchDB('julies2');
-    this.remote = 'http://neoj:wolcott123!@localhost:5984/julies2';
+    this.remote = 'http://admin:admin@localhost:5984/julies2';
     const options = {
       live: true,
       retry: true,
@@ -35,20 +35,23 @@ export class DbService {
         include_docs: true,
       })
       .on('change', (change: any) => {
+        console.warn(change.doc);
+
         if (change.doc.type === 'table') {
           console.warn('Change detected on table document');
-          console.warn(change.doc);
           this._tablesSubject.next(change.doc);
-        } else if (change.doc.type === 'product-consumed') {
-          console.warn('Change detected on product consumed document');
-          console.warn(change.doc);
+        } else if (change.doc.type === 'products-consumed') {
+          console.warn('Change detected on consumed products document');
           this._prodConsumedSubject.next(change.doc);
         } else if (change.doc.type === 'products') {
           console.warn('Change detected on products document');
-          console.warn(change.doc);
-          this._prodSubject.next(change.doc);
+          this._productsSubject.next(change.doc);
         }
       });
+  }
+
+  getAllProductChanges() {
+    return this._productsSubject.asObservable();
   }
 
   getCurrentTableChanges() {
@@ -59,23 +62,22 @@ export class DbService {
     return this._prodConsumedSubject.asObservable();
   }
 
-  getCurrentProductChanges() {
-    return this._prodSubject.asObservable();
-  }
-
-  handleChange<T extends { _id: string }>(
+  handleChange<T extends { _id?: string }>(
     subject: BehaviorSubject<Array<T>>,
-    changeDoc: any,
+    changedDoc: any,
     updateManually: Function
   ) {
     let docs = subject.getValue();
-    let idx = docs.findIndex((x: T) => x._id === changeDoc._id);
+    console.log(changedDoc);
+    console.warn(docs);
+    var idx = docs.findIndex((x: T) => x._id === changedDoc._id);
+    console.warn(idx);
 
-    if (idx == -1) {
-      console.log('The update is being updated manually! :(');
+    if (idx === -1) {
       updateManually();
+      return;
     }
-    docs[idx] = changeDoc;
+    docs[idx] = changedDoc;
     console.warn(docs);
     subject.next(docs);
   }

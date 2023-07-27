@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
 
 import { TablesPage } from './tables.page';
 
@@ -11,7 +11,7 @@ const routes: Routes = [
   {
     path: 'table-details/:id',
     loadChildren: () =>
-      import('./table-details/table-details.module').then(
+      import('../table-details/table-details.module').then(
         (m) => m.TableDetailsPageModule
       ),
   },

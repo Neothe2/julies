@@ -1,12 +1,12 @@
 export class ProductsConsumedDoc {
   _id: string = '';
-  _rev: string = '';
+  _rev?: string = '';
   type: string = 'products-consumed';
   table: string = '';
   products: Array<ConsumedProduct> = [];
 }
 
-class ConsumedProduct {
+export class ConsumedProduct {
   product: string = '';
   category: string = '';
   amount: number = 0;

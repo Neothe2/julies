@@ -1,0 +1,18 @@
+.split-screen-horizontal {
+  height: 50% !important;
+  overflow-y: scroll !important;
+}
+
+ion-card {
+  width: 100%;
+  min-height: 60px;
+  max-height: 60px;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  border-style: solid;
+  overflow-y: scroll !important;
+
+  text-align: center !important;
+  vertical-align: middle !important;
+}

@@ -1,38 +1,38 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable } from '@angular/core';
 import {
   BehaviorSubject,
-  Subscription,
-  Observable,
+  catchError,
   from,
   map,
-  take,
-  catchError,
+  Observable,
   of,
+  Subscription,
+  take,
 } from 'rxjs';
-import { ProductsConsumedDoc } from 'src/app/model/productsConsumed';
-import { DbService } from '../db/db.service';
 import { ProductsDoc } from 'src/app/model/products';
+import { DbService } from '../db/db.service';
 
 @Injectable({
   providedIn: 'root',
 })
-export class ProductsService implements OnDestroy {
-  private prodSubject: BehaviorSubject<Array<ProductsDoc>> =
-    new BehaviorSubject<Array<ProductsDoc>>(new Array<ProductsDoc>());
-  subscriptions: Subscription[] = [];
+export class ProductsService {
+  prodSubject: BehaviorSubject<Array<ProductsDoc>> = new BehaviorSubject(
+    new Array<ProductsDoc>()
+  );
+  subscriptions: Array<Subscription> = [];
 
-  constructor(private db: DbService) {
+  constructor(private dbService: DbService) {
+    this.fetchProducts();
     this.initChangeHandler();
-    this.fetchProducts;
   }
 
   initChangeHandler() {
-    let sub = this.db
-      .getCurrentProductChanges()
+    let sub: Subscription = this.dbService
+      .getAllProductChanges()
       .subscribe((changeDoc: ProductsDoc) => {
         if (changeDoc) {
-          console.log('handlechange called');
-          this.db.handleChange(this.prodSubject, changeDoc, () => {
+          console.warn('handleChange called');
+          this.dbService.handleChange(this.prodSubject, changeDoc, () => {
             this.fetchProducts();
           });
         }
@@ -40,38 +40,32 @@ export class ProductsService implements OnDestroy {
     this.subscriptions.push(sub);
   }
 
-  handleChange() {
-    this.fetchProducts();
-  }
-
-  ngOnDestroy(): void {
-    for (let sub of this.subscriptions) {
-      sub.unsubscribe();
-    }
+  ngOnDestroy() {
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
   fetchProducts() {
+    console.error('fetchProducts called');
     let query = {
       selector: {
         type: 'products',
       },
       fields: ['_id', '_rev', 'type', 'products'],
-      execution_status: true,
+      execution_stats: true,
       limit: 1,
     };
-    let q: Observable<any> = from(this.db.db.find(query)).pipe(
+    let q: Observable<any> = from(this.dbService.db.find(query)).pipe(
       map((obj: any) => obj['docs'])
     );
-
     q.pipe(
       take(1),
       catchError((_) => of([]))
-    ).subscribe((Products: any) => {
-      this.prodSubject.next(Products);
+    ).subscribe((productsDoc) => {
+      this.prodSubject.next(productsDoc);
     });
   }
 
-  getCurrentProducts() {
+  getAllProducts() {
     return this.prodSubject.asObservable();
   }
 }
